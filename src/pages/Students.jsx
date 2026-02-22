@@ -18,10 +18,7 @@ function Students() {
     [navigate],
   );
 
-  const handleDelete = useCallback(
-    (id) => deleteStudent(id),
-    [deleteStudent],
-  );
+  const handleDelete = useCallback((id) => deleteStudent(id), [deleteStudent]);
 
   const filteredStudents = useMemo(() => {
     const s = search.trim().toLowerCase();

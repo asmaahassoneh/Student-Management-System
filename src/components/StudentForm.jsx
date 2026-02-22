@@ -46,7 +46,6 @@ function StudentForm() {
         value={values.email}
         onChange={handleChange}
         required
-
       />
       <input
         name="major"
