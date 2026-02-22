@@ -6,6 +6,7 @@ import Students from "./pages/Students";
 import StudentDetails from "./pages/StudentDetails";
 import About from "./pages/About";
 import RandomUser from "./pages/RandomUser";
+import NotFound from "./pages/NotFound";
 
 function App() {
   return (
@@ -18,7 +19,7 @@ function App() {
         <Route path="/students/:id" element={<StudentDetails />} />
         <Route path="/about" element={<About />} />
         <Route path="/random-user" element={<RandomUser />} />
-        <Route path="*" element={<h2>404 - Page Not Found</h2>} />
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </>
   );

@@ -1,15 +1,44 @@
-import { useState } from "react";
+import { useMemo, useState, useCallback } from "react";
 import { ToastContainer } from "react-toastify";
 import StudentForm from "../components/StudentForm";
 import StudentList from "../components/StudentList";
 import "react-toastify/dist/ReactToastify.css";
 import { useStudents } from "../context/useStudents";
+import { useNavigate } from "react-router-dom";
 
 function Students() {
-  const { students, loading, error } = useStudents();
+  const { students, loading, error, deleteStudent } = useStudents();
+  const navigate = useNavigate();
 
   const [search, setSearch] = useState("");
   const [filterMajor, setFilterMajor] = useState("");
+
+  const handleView = useCallback(
+    (id) => navigate(`/students/${id}`),
+    [navigate],
+  );
+
+  const handleDelete = useCallback(
+    (id) => deleteStudent(id),
+    [deleteStudent],
+  );
+
+  const filteredStudents = useMemo(() => {
+    const s = search.trim().toLowerCase();
+    const m = filterMajor.trim().toLowerCase();
+
+    return students.filter((student) => {
+      const matchesSearch = s
+        ? (student.name ?? "").toLowerCase().includes(s)
+        : true;
+
+      const matchesMajor = m
+        ? (student.major ?? "").toLowerCase().includes(m)
+        : true;
+
+      return matchesSearch && matchesMajor;
+    });
+  }, [students, search, filterMajor]);
 
   if (loading) {
     return (
@@ -28,18 +57,6 @@ function Students() {
       </div>
     );
   }
-
-  const filteredStudents = students.filter((student) => {
-    const matchesSearch = student.name
-      .toLowerCase()
-      .includes(search.toLowerCase());
-
-    const matchesMajor = filterMajor
-      ? student.major.toLowerCase().includes(filterMajor.toLowerCase())
-      : true;
-
-    return matchesSearch && matchesMajor;
-  });
 
   return (
     <div className="container">
@@ -61,7 +78,11 @@ function Students() {
         />
       </div>
 
-      <StudentList students={filteredStudents} />
+      <StudentList
+        students={filteredStudents}
+        onView={handleView}
+        onDelete={handleDelete}
+      />
 
       <ToastContainer />
     </div>

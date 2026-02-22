@@ -1,10 +1,21 @@
-import { useNavigate } from "react-router-dom";
-import { useStudents } from "../context/useStudents";
+import { memo } from "react";
 
-function StudentList({ students }) {
-  const { deleteStudent } = useStudents();
-  const navigate = useNavigate();
+const StudentRow = memo(function StudentRow({ student, onView, onDelete }) {
+  return (
+    <tr>
+      <td data-label="Name">{student.name}</td>
+      <td data-label="Email">{student.email}</td>
+      <td data-label="Major">{student.major}</td>
+      <td data-label="GPA">{student.gpa}</td>
+      <td data-label="Actions">
+        <button onClick={() => onView(student.id)}>View</button>
+        <button onClick={() => onDelete(student.id)}>Delete</button>
+      </td>
+    </tr>
+  );
+});
 
+function StudentList({ students, onView, onDelete }) {
   if (students.length === 0) {
     return <p className="empty-message">No students registered yet.</p>;
   }
@@ -24,20 +35,12 @@ function StudentList({ students }) {
 
         <tbody>
           {students.map((student) => (
-            <tr key={student.id}>
-              <td data-label="Name">{student.name}</td>
-              <td data-label="Email">{student.email}</td>
-              <td data-label="Major">{student.major}</td>
-              <td data-label="GPA">{student.gpa}</td>
-              <td data-label="Actions">
-                <button onClick={() => navigate(`/students/${student.id}`)}>
-                  View
-                </button>
-                <button onClick={() => deleteStudent(student.id)}>
-                  Delete
-                </button>
-              </td>
-            </tr>
+            <StudentRow
+              key={student.id}
+              student={student}
+              onView={onView}
+              onDelete={onDelete}
+            />
           ))}
         </tbody>
       </table>
@@ -45,4 +48,4 @@ function StudentList({ students }) {
   );
 }
 
-export default StudentList;
+export default memo(StudentList);

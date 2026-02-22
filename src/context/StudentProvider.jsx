@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import { StudentContext } from "./StudentContext";
 import { studentsApi } from "../services/studentsApi";
 
@@ -25,22 +25,18 @@ export function StudentProvider({ children }) {
     fetchStudents();
   }, []);
 
-  const addStudent = async (student) => {
+  const addStudent = useCallback(async (student) => {
     try {
       setError(null);
-      const newStudent = {
-        ...student,
-      };
-
-      const res = await studentsApi.create(newStudent);
+      const res = await studentsApi.create({ ...student });
       setStudents((prev) => [...prev, res.data]);
     } catch (e) {
       setError("Failed to add student");
       throw e;
     }
-  };
+  }, []);
 
-  const deleteStudent = async (id) => {
+  const deleteStudent = useCallback(async (id) => {
     try {
       setError(null);
       await studentsApi.remove(id);
@@ -49,9 +45,9 @@ export function StudentProvider({ children }) {
       setError("Failed to delete student");
       throw e;
     }
-  };
+  }, []);
 
-  const updateStudent = async (id, updatedStudent) => {
+  const updateStudent = useCallback(async (id, updatedStudent) => {
     try {
       setError(null);
       const res = await studentsApi.update(id, updatedStudent);
@@ -62,20 +58,21 @@ export function StudentProvider({ children }) {
       setError("Failed to update student");
       throw e;
     }
-  };
+  }, []);
+
+  const value = useMemo(
+    () => ({
+      students,
+      loading,
+      error,
+      addStudent,
+      deleteStudent,
+      updateStudent,
+    }),
+    [students, loading, error, addStudent, deleteStudent, updateStudent],
+  );
 
   return (
-    <StudentContext.Provider
-      value={{
-        students,
-        loading,
-        error,
-        addStudent,
-        deleteStudent,
-        updateStudent,
-      }}
-    >
-      {children}
-    </StudentContext.Provider>
+    <StudentContext.Provider value={value}>{children}</StudentContext.Provider>
   );
 }
