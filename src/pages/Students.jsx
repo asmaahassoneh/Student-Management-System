@@ -7,7 +7,8 @@ import { useStudents } from "../context/useStudents";
 import { useNavigate } from "react-router-dom";
 
 function Students() {
-  const { students, loading, error, deleteStudent } = useStudents();
+  const { students, loading, error, deleteStudent, refetchStudents } =
+    useStudents();
   const navigate = useNavigate();
 
   const [search, setSearch] = useState("");
@@ -48,9 +49,13 @@ function Students() {
 
   if (error) {
     return (
-      <div className="container">
+      <div className="container" style={{ textAlign: "center" }}>
         <h1>Student Dashboard</h1>
-        <p style={{ color: "red" }}>❌ {error}</p>
+        <p style={{ color: "red" }}>❌ {String(error)}</p>
+
+        <div style={{ marginTop: 12 }}>
+          <button onClick={refetchStudents}>Retry</button>
+        </div>
       </div>
     );
   }

@@ -7,23 +7,23 @@ export function StudentProvider({ children }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    const fetchStudents = async () => {
-      try {
-        setLoading(true);
-        setError(null);
+  const fetchStudents = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
 
-        const res = await studentsApi.getAll();
-        setStudents(res.data);
-      } catch (e) {
-        setError("Failed to load students" + e);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchStudents();
+      const res = await studentsApi.getAll();
+      setStudents(res.data);
+    } catch (e) {
+      setError("Failed to load students: " + (e?.message ?? String(e)));
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    fetchStudents();
+  }, [fetchStudents]);
 
   const addStudent = useCallback(async (student) => {
     try {
@@ -31,7 +31,7 @@ export function StudentProvider({ children }) {
       const res = await studentsApi.create({ ...student });
       setStudents((prev) => [...prev, res.data]);
     } catch (e) {
-      setError("Failed to add student");
+      setError("Failed to add student: " + (e?.message ?? String(e)));
       throw e;
     }
   }, []);
@@ -42,7 +42,7 @@ export function StudentProvider({ children }) {
       await studentsApi.remove(id);
       setStudents((prev) => prev.filter((s) => String(s.id) !== String(id)));
     } catch (e) {
-      setError("Failed to delete student");
+      setError("Failed to delete student: " + (e?.message ?? String(e)));
       throw e;
     }
   }, []);
@@ -55,7 +55,7 @@ export function StudentProvider({ children }) {
         prev.map((s) => (String(s.id) === String(id) ? res.data : s)),
       );
     } catch (e) {
-      setError("Failed to update student");
+      setError("Failed to update student: " + (e?.message ?? String(e)));
       throw e;
     }
   }, []);
@@ -68,8 +68,17 @@ export function StudentProvider({ children }) {
       addStudent,
       deleteStudent,
       updateStudent,
+      refetchStudents: fetchStudents,
     }),
-    [students, loading, error, addStudent, deleteStudent, updateStudent],
+    [
+      students,
+      loading,
+      error,
+      addStudent,
+      deleteStudent,
+      updateStudent,
+      fetchStudents,
+    ],
   );
 
   return (

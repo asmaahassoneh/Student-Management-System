@@ -2,7 +2,10 @@ import useFetch from "../hooks/useFetch";
 import { useCallback, useState } from "react";
 
 function RandomUser() {
-  const { data, loading, error } = useFetch("http://localhost:3001/students");
+  const { data, loading, error, refetch } = useFetch(
+    "http://localhost:3001/students",
+  );
+
   const [randomStudent, setRandomStudent] = useState(null);
 
   const pickRandom = useCallback(() => {
@@ -17,7 +20,13 @@ function RandomUser() {
       <h1>Random Student</h1>
 
       {loading && <p>Loading...</p>}
-      {error && <p style={{ color: "red" }}>❌ {error}</p>}
+
+      {error && (
+        <div>
+          <p style={{ color: "red" }}>❌ {error}</p>
+          <button onClick={refetch}>Try Again</button>
+        </div>
+      )}
 
       {!loading && !error && (!data || data.length === 0) && (
         <p>No students found.</p>
@@ -25,10 +34,10 @@ function RandomUser() {
 
       {randomStudent && (
         <div className="card">
-          <h2>{randomStudent.name}</h2>
-          <p>Email: {randomStudent.email}</p>
-          <p>Major: {randomStudent.major}</p>
-          <p>GPA: {randomStudent.gpa}</p>
+          <h2>{randomStudent?.name ?? "Unknown"}</h2>
+          <p>Email: {randomStudent?.email ?? "-"}</p>
+          <p>Major: {randomStudent?.major ?? "-"}</p>
+          <p>GPA: {randomStudent?.gpa ?? "-"}</p>
         </div>
       )}
 

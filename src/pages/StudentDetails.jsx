@@ -64,7 +64,7 @@ function StudentDetails() {
     try {
       setSaving(true);
 
-      const payload = {        
+      const payload = {
         ...result.data,
       };
 
