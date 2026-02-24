@@ -42,6 +42,7 @@ function StudentForm() {
       />
       <input
         name="email"
+        type="email"
         placeholder="Email Address"
         value={values.email}
         onChange={handleChange}

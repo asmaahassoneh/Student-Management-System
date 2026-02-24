@@ -64,8 +64,7 @@ function StudentDetails() {
     try {
       setSaving(true);
 
-      const payload = {
-        ...student,
+      const payload = {        
         ...result.data,
       };
 
@@ -80,7 +79,6 @@ function StudentDetails() {
     }
   };
 
-  // Global loading/error from provider (fetching students)
   if (loading) {
     return (
       <div className="details-card">
@@ -170,6 +168,7 @@ function StudentDetails() {
               <span>Email</span>
               <input
                 name="email"
+                type="email"
                 value={form.email}
                 onChange={handleChange}
                 placeholder="Email Address"
