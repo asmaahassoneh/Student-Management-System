@@ -1,5 +1,4 @@
 import { useMemo, useState, useCallback } from "react";
-import { ToastContainer } from "react-toastify";
 import StudentForm from "../components/StudentForm";
 import StudentList from "../components/StudentList";
 import "react-toastify/dist/ReactToastify.css";
@@ -85,8 +84,6 @@ function Students() {
         onView={handleView}
         onDelete={handleDelete}
       />
-
-      <ToastContainer />
     </div>
   );
 }

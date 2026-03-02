@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useStudents } from "../context/useStudents";
-import { validateStudent } from "../utils/studentUtils";
+import { studentSchema } from "../validation/studentSchema";
 
 function StudentDetails() {
   const { id } = useParams();
@@ -55,25 +55,29 @@ function StudentDetails() {
   };
 
   const handleSave = async () => {
-    const result = validateStudent(form);
-    if (!result.ok) {
-      toast.error(result.message);
-      return;
-    }
+    const payloadForValidation = {
+      name: form.name,
+      email: form.email,
+      major: form.major,
+      gpa: form.gpa === "" ? "" : Number(form.gpa),
+    };
 
     try {
       setSaving(true);
 
-      const payload = {
-        ...result.data,
+      await studentSchema.validate(payloadForValidation, { abortEarly: true });
+
+      const payloadForApi = {
+        ...payloadForValidation,
+        gpa: Number(payloadForValidation.gpa),
       };
 
-      await updateStudent(studentId, payload);
+      await updateStudent(studentId, payloadForApi);
 
       toast.success("Student updated successfully!");
       setIsEditing(false);
     } catch (e) {
-      toast.error("Failed to update student" + e);
+      toast.error(e?.message ?? "Validation failed");
     } finally {
       setSaving(false);
     }
@@ -161,6 +165,7 @@ function StudentDetails() {
                 value={form.name}
                 onChange={handleChange}
                 placeholder="Full Name"
+                required
               />
             </div>
 
@@ -172,6 +177,8 @@ function StudentDetails() {
                 value={form.email}
                 onChange={handleChange}
                 placeholder="Email Address"
+                autoComplete="email"
+                required
               />
             </div>
 
@@ -182,6 +189,7 @@ function StudentDetails() {
                 value={form.major}
                 onChange={handleChange}
                 placeholder="Major"
+                required
               />
             </div>
 
@@ -191,9 +199,12 @@ function StudentDetails() {
                 name="gpa"
                 type="number"
                 step="0.1"
+                min="0"
+                max="4"
                 value={form.gpa}
                 onChange={handleChange}
                 placeholder="0 - 4"
+                required
               />
             </div>
 
@@ -202,6 +213,7 @@ function StudentDetails() {
                 className="back-btn"
                 onClick={handleCancel}
                 disabled={saving}
+                type="button"
               >
                 Cancel
               </button>
@@ -210,6 +222,7 @@ function StudentDetails() {
                 className="back-btn"
                 onClick={handleSave}
                 disabled={saving}
+                type="button"
               >
                 {saving ? "Saving..." : "Save"}
               </button>
