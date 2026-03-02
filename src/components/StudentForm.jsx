@@ -28,13 +28,16 @@ function StudentForm() {
 
   const onSubmit = async (data) => {
     try {
-      const payload = { ...data, gpa: Number(data.gpa) };
+      const payload = {
+        ...data,
+        gpa: Number(data.gpa),
+      };
 
       await addStudent(payload);
       toast.success("Student Registered Successfully!");
       reset();
     } catch (e) {
-      toast.error("Failed to add student" + e);
+      toast.error("Failed to add student: " + (e?.message ?? String(e)));
     }
   };
 
@@ -46,6 +49,7 @@ function StudentForm() {
         placeholder="Full Name"
         register={register}
         error={errors.name}
+        required
       />
 
       <Input
@@ -56,6 +60,7 @@ function StudentForm() {
         autoComplete="email"
         register={register}
         error={errors.email}
+        required
       />
 
       <Input
@@ -64,6 +69,7 @@ function StudentForm() {
         placeholder="Major"
         register={register}
         error={errors.major}
+        required
       />
 
       <Input
@@ -76,6 +82,7 @@ function StudentForm() {
         placeholder="GPA (0 - 4)"
         register={register}
         error={errors.gpa}
+        required
       />
 
       <button type="submit" disabled={isSubmitting}>

@@ -1,9 +1,12 @@
 import { useMemo, useState, useCallback } from "react";
 import StudentForm from "../components/StudentForm";
-import StudentList from "../components/StudentList";
 import "react-toastify/dist/ReactToastify.css";
 import { useStudents } from "../context/useStudents";
 import { useNavigate } from "react-router-dom";
+
+import StudentCardGrid from "../components/StudentCardGrid";
+import Modal from "../components/ui/Modal";
+import Alert from "../components/ui/Alert";
 
 function Students() {
   const { students, loading, error, deleteStudent, refetchStudents } =
@@ -13,12 +16,21 @@ function Students() {
   const [search, setSearch] = useState("");
   const [filterMajor, setFilterMajor] = useState("");
 
+  const [deleteId, setDeleteId] = useState(null);
+
   const handleView = useCallback(
     (id) => navigate(`/students/${id}`),
     [navigate],
   );
 
-  const handleDelete = useCallback((id) => deleteStudent(id), [deleteStudent]);
+  const handleAskDelete = useCallback((id) => setDeleteId(id), []);
+  const handleCloseModal = useCallback(() => setDeleteId(null), []);
+
+  const handleConfirmDelete = useCallback(async () => {
+    if (!deleteId) return;
+    await deleteStudent(deleteId);
+    setDeleteId(null);
+  }, [deleteId, deleteStudent]);
 
   const filteredStudents = useMemo(() => {
     const s = search.trim().toLowerCase();
@@ -28,11 +40,9 @@ function Students() {
       const matchesSearch = s
         ? (student.name ?? "").toLowerCase().includes(s)
         : true;
-
       const matchesMajor = m
         ? (student.major ?? "").toLowerCase().includes(m)
         : true;
-
       return matchesSearch && matchesMajor;
     });
   }, [students, search, filterMajor]);
@@ -50,8 +60,7 @@ function Students() {
     return (
       <div className="container" style={{ textAlign: "center" }}>
         <h1>Student Dashboard</h1>
-        <p style={{ color: "red" }}>❌ {String(error)}</p>
-
+        <Alert variant="error">❌ {String(error)}</Alert>
         <div style={{ marginTop: 12 }}>
           <button onClick={refetchStudents}>Retry</button>
         </div>
@@ -79,13 +88,26 @@ function Students() {
         />
       </div>
 
-      <StudentList
+      <StudentCardGrid
         students={filteredStudents}
         onView={handleView}
-        onDelete={handleDelete}
+        onDelete={handleAskDelete}
       />
+
+      <Modal
+        open={!!deleteId}
+        title="Delete student?"
+        onClose={handleCloseModal}
+        onConfirm={handleConfirmDelete}
+        confirmText="Yes, delete"
+        cancelText="Cancel"
+        confirmVariant="danger"
+      >
+        This action cannot be undone.
+      </Modal>
     </div>
   );
 }
 
 export default Students;
+
