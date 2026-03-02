@@ -3,6 +3,7 @@ import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 export default function PasswordInput({
   name,
+  register,
   value,
   onChange,
   placeholder = "Password",
@@ -15,6 +16,13 @@ export default function PasswordInput({
   const inputId = useId();
   const [show, setShow] = useState(false);
 
+  const hasError = !!error;
+
+  const inputProps =
+    typeof register === "function"
+      ? { ...register(name) }
+      : { name, value: value ?? "", onChange };
+
   return (
     <div style={{ display: "grid", gap: "6px" }}>
       {label && (
@@ -26,17 +34,15 @@ export default function PasswordInput({
         </label>
       )}
 
-      <div className={`password-wrapper ${error ? "password-error" : ""}`}>
+      <div className={`password-wrapper ${hasError ? "password-error" : ""}`}>
         <input
           id={inputId}
           type={show ? "text" : "password"}
-          name={name}
-          value={value}
-          onChange={onChange}
           placeholder={placeholder}
           required={required}
           disabled={disabled}
           autoComplete={autoComplete}
+          {...inputProps}
         />
 
         <button
@@ -50,7 +56,7 @@ export default function PasswordInput({
         </button>
       </div>
 
-      {error && <p className="field-error">{error}</p>}
+      {hasError && <p className="field-error">{error.message}</p>}
     </div>
   );
 }

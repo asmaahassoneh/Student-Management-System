@@ -1,40 +1,36 @@
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/useAuth";
+
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import { registerSchema } from "../validation/registerSchema";
+
+import Input from "../components/form/Input";
 import PasswordInput from "../components/PasswordInput";
 
 export default function Register() {
-  const { register } = useAuth();
+  const { register: registerUser } = useAuth();
   const navigate = useNavigate();
 
-  const [form, setForm] = useState({
-    username: "",
-    email: "",
-    password: "",
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting },
+    setError,
+  } = useForm({
+    resolver: yupResolver(registerSchema),
+    defaultValues: { username: "", email: "", password: "" },
+    mode: "onBlur",
   });
 
-  const [loading, setLoading] = useState(false);
-  const [err, setErr] = useState("");
-  const [ok, setOk] = useState("");
-
-  const handleChange = (e) => {
-    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setErr("");
-    setOk("");
-
+  const onSubmit = async (data) => {
     try {
-      setLoading(true);
-      await register(form);
-      setOk("Account created! Redirecting to login...");
-      setTimeout(() => navigate("/login"), 900);
-    } catch (error) {
-      setErr(error?.message || "Register failed");
-    } finally {
-      setLoading(false);
+      await registerUser(data);
+      reset();
+      navigate("/login", { replace: true });
+    } catch (e) {
+      setError("root", { message: e?.message || "Register failed" });
     }
   };
 
@@ -50,28 +46,27 @@ export default function Register() {
           <p className="authSub">Sign up to access the portal.</p>
         </div>
 
-        <form className="authForm" onSubmit={handleSubmit}>
+        <form className="authForm" onSubmit={handleSubmit(onSubmit)}>
           <div className="field fieldEnter" style={{ animationDelay: "80ms" }}>
-            <input
-              className="authInput"
+            <Input
+              label="Username"
               name="username"
               placeholder="Username"
-              value={form.username}
-              onChange={handleChange}
-              required
+              register={register}
+              error={errors.username}
             />
             <span className="fieldGlow" />
           </div>
 
           <div className="field fieldEnter" style={{ animationDelay: "140ms" }}>
-            <input
-              className="authInput"
+            <Input
+              label="Email"
               name="email"
               type="email"
               placeholder="Email"
-              value={form.email}
-              onChange={handleChange}
-              required
+              autoComplete="email"
+              register={register}
+              error={errors.email}
             />
             <span className="fieldGlow" />
           </div>
@@ -79,11 +74,12 @@ export default function Register() {
           <div className="field fieldEnter" style={{ animationDelay: "200ms" }}>
             <div className="authPasswordWrap">
               <PasswordInput
+                label="Password"
                 name="password"
-                value={form.password}
-                onChange={handleChange}
                 placeholder="Password"
-                required
+                autoComplete="new-password"
+                register={register}
+                error={errors.password}
               />
             </div>
             <span className="fieldGlow" />
@@ -92,13 +88,14 @@ export default function Register() {
           <button
             className="authBtn authBtnEnter"
             type="submit"
-            disabled={loading}
+            disabled={isSubmitting}
           >
-            {loading ? "Creating..." : "Register"}
+            {isSubmitting ? "Creating..." : "Register"}
           </button>
 
-          {!!err && <p className="authMsg authErr">❌ {err}</p>}
-          {!!ok && <p className="authMsg authOk">✅ {ok}</p>}
+          {!!errors.root?.message && (
+            <p className="authMsg authErr">❌ {errors.root.message}</p>
+          )}
         </form>
       </div>
     </div>

@@ -1,70 +1,86 @@
 import { toast } from "react-toastify";
 import { useStudents } from "../context/useStudents";
-import useForm from "../hooks/useForm";
-import { validateStudent } from "../utils/studentUtils";
+
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import { studentSchema } from "../validation/studentSchema";
+
+import Input from "./form/Input";
 
 function StudentForm() {
   const { addStudent } = useStudents();
 
-  const { values, handleChange, resetForm } = useForm({
-    name: "",
-    email: "",
-    major: "",
-    gpa: "",
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm({
+    resolver: yupResolver(studentSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      major: "",
+      gpa: "",
+    },
+    mode: "onBlur",
   });
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    const result = validateStudent(values);
-    if (!result.ok) {
-      toast.error(result.message);
-      return;
-    }
-
+  const onSubmit = async (data) => {
     try {
-      await addStudent(result.data);
+      const payload = { ...data, gpa: Number(data.gpa) };
+
+      await addStudent(payload);
       toast.success("Student Registered Successfully!");
-      resetForm();
+      reset();
     } catch (e) {
       toast.error("Failed to add student" + e);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="form-grid">
-      <input
+    <form onSubmit={handleSubmit(onSubmit)} className="form-grid">
+      <Input
+        label="Full Name"
         name="name"
         placeholder="Full Name"
-        value={values.name}
-        onChange={handleChange}
-        required
+        register={register}
+        error={errors.name}
       />
-      <input
+
+      <Input
+        label="Email Address"
         name="email"
         type="email"
         placeholder="Email Address"
-        value={values.email}
-        onChange={handleChange}
-        required
+        autoComplete="email"
+        register={register}
+        error={errors.email}
       />
-      <input
+
+      <Input
+        label="Major"
         name="major"
         placeholder="Major"
-        value={values.major}
-        onChange={handleChange}
-        required
+        register={register}
+        error={errors.major}
       />
-      <input
+
+      <Input
+        label="GPA"
         name="gpa"
         type="number"
         step="0.1"
+        min="0"
+        max="4"
         placeholder="GPA (0 - 4)"
-        value={values.gpa}
-        onChange={handleChange}
-        required
+        register={register}
+        error={errors.gpa}
       />
-      <button type="submit">Register Student</button>
+
+      <button type="submit" disabled={isSubmitting}>
+        {isSubmitting ? "Registering..." : "Register Student"}
+      </button>
     </form>
   );
 }
